@@ -23,13 +23,53 @@ class WebSocket
     # todo
   end
   
+  def close
+    ostream.close
+    istream.close
+    
+    istream.removeFromRunLoop(NSRunLoop.currentRunLoop, forMode:NSRunLoop::NSDefaultRunLoopMode)
+    ostream.removeFromRunLoop(NSRunLoop.currentRunLoop, forMode:NSRunLoop::NSDefaultRunLoopMode)
+    
+    ostream.release
+    istream.release
+  end
+  
   protected
   
   def stream(stream, handleEvent:eventCode)
-    # todo
+    if eventCode == 16
+      close
+      @delegate.send(:connectionClosed)
+    else
+      if istream.hasBytesAvailable
+        read(istream)
+      end
+    end
   end
   
   private
+  
+  def read(input)
+    stream, read_bytes = "", 0
+    while istream.hasBytesAvailable
+      buf = "\0" * CHUNK_LENGTH
+      len = input.read(buf, maxLength:CHUNK_LENGTH)
+      read_bytes += len
+      stream << buf
+    end
+    data = stream[0..read_bytes-1]
+    if data =~ /\r\n\r\n$/
+      @q.resume!
+    else
+      if data
+        if @delegate.respond_to?(:dataReceived)
+          @delegate.send(:dataReceived, data.delete("\x00ˇ").force_encoding("UTF-8"))
+        else
+          warn "Tried to call dataReceived on the delegate, but it's undefined."
+        end
+      end
+    end
+  end
   
   def istream
     @istream[0]
