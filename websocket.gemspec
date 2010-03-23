@@ -1,5 +1,5 @@
 Gem::Specification.new do |spec|
-  spec.name = %q{web_socket}
+  spec.name = %q{websocket}
   spec.version = "0.0.1"
   spec.authors = ["Chris Mowforth"]
   spec.email = "chris@mowforth.com"
@@ -8,5 +8,5 @@ Gem::Specification.new do |spec|
   spec.summary = "A WebSocket client for MacRuby"
   spec.required_ruby_version = Gem::Requirement.new(">= 1.9.0")
   spec.test_files = Dir.glob("test/*.rb")
-  spec.homepage = "http://github.com/cmowforth/web_socket"
+  spec.homepage = "http://github.com/cmowforth/websocket"
 end

@@ -1,6 +1,6 @@
 framework 'Foundation'
 
-class WebSocket  
+class Websocket  
   attr_accessor :delegate
   
   CHUNK_LENGTH = 1024
