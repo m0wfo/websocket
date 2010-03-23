@@ -27,4 +27,9 @@ class WebSocketTest < Test::Unit::TestCase
     assert ws.respond_to?(:handshake)
     assert_equal ws.handshake, handshake
   end
+  
+  def test_connection
+    ws = WebSocket.new('127.0.0.1', 8080)
+    ws.connect
+  end
 end

@@ -21,6 +21,27 @@ class WebSocket
   
   def connect
     # todo
+    NSStream.getStreamsToHost(@host, port:@port, inputStream:@istream, outputStream:@ostream)
+    istream.setDelegate(self)
+    ostream.setDelegate(self)
+    
+    istream.scheduleInRunLoop(NSRunLoop.currentRunLoop, forMode:NSDefaultRunLoopMode)
+    ostream.scheduleInRunLoop(NSRunLoop.currentRunLoop, forMode:NSDefaultRunLoopMode)
+    
+    istream.retain
+    ostream.retain
+    
+    istream.open
+    ostream.open
+    
+    @q.async(@group) { ostream.write(@handshake.force_encoding("US-ASCII"), maxLength:handshake.length) }
+    @group.wait
+    @q.suspend!
+  end
+  
+  def push(message)
+    data = "\x00#{message}\xff"
+    @q.async(@group) { ostream.write(data, maxLength:data.length) }
   end
   
   def close
@@ -77,7 +98,5 @@ class WebSocket
   
   def ostream
     @ostream[0]
-  end
-    
   end
 end
