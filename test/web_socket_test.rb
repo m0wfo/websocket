@@ -13,8 +13,8 @@ class WebSocketTest < Test::Unit::TestCase
     assert_equal WebSocket::CHUNK_LENGTH, 1024
   end
   
-  def test_connection
-    @ws.connect
+  def test_error_raised_when_connection_refused
+    # todo
   end
   
   def setup

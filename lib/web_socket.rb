@@ -1,6 +1,6 @@
 framework 'Foundation'
 
-class WebSocket
+class WebSocket  
   attr_accessor :delegate
   
   CHUNK_LENGTH = 1024
@@ -55,6 +55,8 @@ class WebSocket
     if eventCode == 16
       close
       @delegate.send(:connectionClosed)
+    elsif eventCode == NSStreamEventErrorOccurred
+      warn stream.streamError.localizedDescription
     else
       if istream.hasBytesAvailable
         read(istream)
