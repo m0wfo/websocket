@@ -1,26 +1,19 @@
+framework 'Foundation'
+
 class WebSocket
   attr_accessor :delegate
-  attr_reader :handshake, :host
   
   CHUNK_LENGTH = 1024
   
   def initialize(host, port)
-    @istream = Pointer.new(:id)
-    @ostream = Pointer.new(:id)
+    @istream, @ostream = Pointer.new(:id), Pointer.new(:id)
     @q = Dispatch::Queue.new("com.mowforth.limpet.websocket.#{object_id}")
     @group = Dispatch::Group.new
     @host = NSHost.hostWithName(host)
     @port = port
-    @handshake = "GET / HTTP/1.1\r\n" +
-    "Upgrade: WebSocket\r\n" +
-    "Connection: Upgrade\r\n" +
-    "Host: #{@host.name}:#{@port}\r\n" +
-    "Origin: http://#{@host.name}\r\n" +
-    "\r\n"
   end
   
   def connect
-    # todo
     NSStream.getStreamsToHost(@host, port:@port, inputStream:@istream, outputStream:@ostream)
     istream.setDelegate(self)
     ostream.setDelegate(self)
@@ -34,7 +27,8 @@ class WebSocket
     istream.open
     ostream.open
     
-    @q.async(@group) { ostream.write(@handshake.force_encoding("US-ASCII"), maxLength:handshake.length) }
+    @q.async(@group) { ostream.write(handshake, maxLength:handshake.length) }
+    
     @group.wait
     @q.suspend!
   end
@@ -90,6 +84,15 @@ class WebSocket
         end
       end
     end
+  end
+  
+  def handshake
+    "GET / HTTP/1.1\r\n" +
+    "Upgrade: WebSocket\r\n" +
+    "Connection: Upgrade\r\n" +
+    "Host: #{@host.name}:#{@port}\r\n" +
+    "Origin: http://#{@host.name}\r\n" +
+    "\r\n".force_encoding("US-ASCII")
   end
   
   def istream
