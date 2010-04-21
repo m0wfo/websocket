@@ -1,16 +1,20 @@
 framework 'Foundation'
+autoload :URI, 'uri'
 
 class Websocket  
-  attr_accessor :delegate
+  attr_accessor :delegate, :host, :port
   
   CHUNK_LENGTH = 1024
   
-  def initialize(host, port)
+  def initialize(location)
+    target = URI::parse(location)
+    raise "Unsupported protocol" unless target.scheme == 'ws'
+
     @istream, @ostream = Pointer.new(:id), Pointer.new(:id)
     @q = Dispatch::Queue.new("com.mowforth.websocket.#{object_id}")
     @group = Dispatch::Group.new
-    @host = NSHost.hostWithName(host)
-    @port = port
+    @host = NSHost.hostWithName(target.host).addresses.last
+    @port = target.port
   end
   
   def connect

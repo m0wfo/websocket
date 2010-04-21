@@ -14,6 +14,11 @@ class WebsocketTest < Test::Unit::TestCase
     assert_equal Websocket::CHUNK_LENGTH, 1024
   end
   
+  def test_correct_uri_parsing
+    assert_equal @ws.host, '127.0.0.1'
+    assert_equal @ws.port, 8080
+  end
+
   def test_error_raised_when_connection_refused
     # assert_raise do
     #   app = NSApplication.new
@@ -28,11 +33,11 @@ class WebsocketTest < Test::Unit::TestCase
   end
   
   def test_read_stream
-    @istream = OpenStruct.new
-    @istream.hasBytesAvailable = true
-    i = flexmock(:safe, @ws) do |mock|
-      mock.should_receive(:istream).and_return { @istream }
-    end
+    # @istream = OpenStruct.new
+    # @istream.hasBytesAvailable = true
+    # i = flexmock(:safe, @ws) do |mock|
+    #   mock.should_receive(:istream).and_return { @istream }
+    # end
     # 
     # @ws.connect
     # @ws.push('hi')
@@ -41,6 +46,6 @@ class WebsocketTest < Test::Unit::TestCase
   protected
   
   def setup
-    @ws ||= Websocket.new('127.0.0.1', 8080)
+    @ws ||= Websocket.new('ws://localhost:8080')
   end
 end
