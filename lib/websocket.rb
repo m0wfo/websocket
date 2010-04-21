@@ -7,7 +7,7 @@ class Websocket
   
   def initialize(host, port)
     @istream, @ostream = Pointer.new(:id), Pointer.new(:id)
-    @q = Dispatch::Queue.new("com.mowforth.limpet.websocket.#{object_id}")
+    @q = Dispatch::Queue.new("com.mowforth.websocket.#{object_id}")
     @group = Dispatch::Group.new
     @host = NSHost.hostWithName(host)
     @port = port
@@ -54,9 +54,10 @@ class Websocket
   def stream(stream, handleEvent:eventCode)
     if eventCode == 16
       close
-      @delegate.send(:connectionClosed)
+      send_or_warn(:connectionClosed)
     elsif eventCode == NSStreamEventErrorOccurred
-      warn stream.streamError.localizedDescription
+      # warn stream.streamError.localizedDescription
+      raise "arrrrgh!"
     else
       if istream.hasBytesAvailable
         read(istream)
@@ -79,11 +80,7 @@ class Websocket
       @q.resume!
     else
       if data
-        if @delegate.respond_to?(:dataReceived)
-          @delegate.send(:dataReceived, data.delete("\x00ˇ").force_encoding("UTF-8"))
-        else
-          warn "Tried to call dataReceived on the delegate, but it's undefined."
-        end
+        send_or_warn(:dataReceived, data.delete("\x00ˇ").force_encoding("UTF-8"))
       end
     end
   end
@@ -103,5 +100,13 @@ class Websocket
   
   def ostream
     @ostream[0]
+  end
+  
+  def send_or_warn(method, *args)
+    if @delegate && @delegate.respond_to?(method)
+      @delegate.send(method, *args)
+    else
+      warn "Delegate does not respond to #{method}"
+    end
   end
 end

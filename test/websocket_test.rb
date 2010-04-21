@@ -28,10 +28,10 @@ class WebsocketTest < Test::Unit::TestCase
   end
   
   def test_read_stream
+    @istream = OpenStruct.new
+    @istream.hasBytesAvailable = true
     i = flexmock(:safe, @ws) do |mock|
-      mock.should_receive(:istream).and_return do
-        "\0\0\0"
-      end
+      mock.should_receive(:istream).and_return { @istream }
     end
     # 
     # @ws.connect
